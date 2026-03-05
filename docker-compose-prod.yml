@@ -1,0 +1,70 @@
+services:
+  # 后端服务（基于项目根目录的Dockerfile构建）
+  backend:
+    build: .  # "." 表示从当前目录（项目根目录）读取Dockerfile构建镜像
+    restart: always
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - py_backend_net
+    environment:
+      - DB_HOST=postgres       # 容器内访问PostgreSQL用服务名，无需localhost
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASS=123456
+      - DB_NAME=py_backend
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - JWT_SECRET_KEY=win_poetry_postgres_123456
+
+  # PostgreSQL数据库（容器化部署）
+  postgres:
+    image: postgres:16
+    restart: always
+    networks:
+      - py_backend_net
+    volumes:
+      - postgres-data:/var/lib/postgresql/data  # 数据持久化到Docker卷
+    environment:
+      - POSTGRES_PASSWORD=123456
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=py_backend
+      - TZ=Asia/Shanghai
+
+  # Redis缓存
+  redis:
+    image: redis:7.0
+    restart: always
+    networks:
+      - py_backend_net
+    volumes:
+      - redis-data:/data
+
+  # Nginx反向代理（前端静态文件+接口转发）
+  nginx:
+    image: nginx:1.25
+    restart: always
+    networks:
+      - py_backend_net
+    ports:
+      - "80:80"    # 宿主机80端口映射到容器80端口
+      - "443:443"  # HTTPS端口（可选）
+    volumes:
+      # 项目根目录/nginx/conf 映射到容器的nginx配置目录
+      - ./nginx/conf:/etc/nginx/conf.d
+      # 项目根目录/nginx/ssl 映射到容器的SSL证书目录（可选）
+      - ./nginx/ssl:/etc/nginx/ssl
+      # 项目根目录/static 映射到容器的静态文件目录（前端打包文件放这里）
+      - ./static:/usr/share/nginx/html
+    depends_on:
+      - backend
+
+# 自定义网络（容器间通信）
+networks:
+  py_backend_net:
+
+# 数据卷（持久化PostgreSQL/Redis数据）
+volumes:
+  postgres-data:
+  redis-data:
