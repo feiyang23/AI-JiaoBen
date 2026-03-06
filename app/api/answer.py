@@ -71,8 +71,12 @@ async def create_answer_api(
     audio_format = None
     audio_size = None
     if audio_file:
+        # 新增：讯飞支持的格式校验
+        allowed_formats = ["wav", "mp3"]
+        audio_format = audio_file.filename.split(".")[-1].lower() if "." in audio_file.filename else None
+        if audio_format not in allowed_formats:
+            raise HTTPException(status_code=400, detail=f"仅支持{allowed_formats}格式音频文件")
         audio_data = await audio_file.read()  # 读取二进制数据
-        audio_format = audio_file.filename.split(".")[-1] if "." in audio_file.filename else None
         audio_size = len(audio_data)
     
     # 调用service创建答卷

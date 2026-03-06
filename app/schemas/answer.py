@@ -31,7 +31,6 @@ class AnswerResponse(AnswerBase):
     question_id: int
     create_time: datetime
     user: Optional[UserResponse] = None  # 关联用户信息
-    question: Optional[QuestionResponse] = None  # 关联问题信息
 
     # 支持从 SQLAlchemy ORM 对象自动转换
     model_config = ConfigDict(from_attributes=True)

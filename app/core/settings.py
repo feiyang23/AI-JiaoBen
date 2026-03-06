@@ -27,5 +27,10 @@ class Settings(BaseSettings):
     @property
     def DB_URL(self):
         return f"postgresql+psycopg2://{self.DB_USER}:{self.DB_PASS}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
-
+    
+    # 讯飞LFasr配置
+    XF_APP_ID: str = os.getenv("XF_APP_ID")
+    XF_API_SECRET: str = os.getenv("XF_API_SECRET")
+    XF_AUDIO_TIMEOUT: int = int(os.getenv("XF_AUDIO_TIMEOUT", 30))  # 转写超时时间
+    XF_AUDIO_INTERVAL: int = int(os.getenv("XF_AUDIO_INTERVAL", 5))  # 轮询间隔
 settings = Settings()
